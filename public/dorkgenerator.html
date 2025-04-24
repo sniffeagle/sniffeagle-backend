@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VKE3HLYFSN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VKE3HLYFSN');
+</script>
+  <meta charset="UTF-8">
+  <title>Google Dork Generator | SniffEagle</title>
+  <meta name="description" content="Generate powerful Google Dorks to uncover hidden files like images, videos, PDFs, and more. Free, fast, and educational.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: #00ffc3;
+      font-family: sans-serif;
+      padding: 40px;
+      text-align: center;
+    }
+    label, select, input, button {
+      font-size: 1rem;
+      margin: 10px;
+    }
+    select, input {
+      padding: 10px;
+      width: 250px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      background-color: #00ffc3;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #output {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      word-wrap: break-word;
+    }
+    .disclaimer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 Google Dork Generator</h1>
+
+  <label for="keyword">Topic / Keyword *</label><br>
+  <input type="text" id="keyword" placeholder="e.g., login, camera, password" required><br><br>
+
+  <label for="find">What do you want to find? *</label><br>
+  <select id="find" required>
+    <option value="">-- Select Type --</option>
+    <option value="images">Images</option>
+    <option value="videos">Videos</option>
+    <option value="ebooks">E-Books</option>
+    <option value="text">Text Files</option>
+    <option value="music">Music</option>
+    <option value="archives">Archives</option>
+    <option value="torrents">Torrents</option>
+  </select><br><br>
+
+  <label for="site">Specific website? (optional)</label><br>
+  <input type="text" id="site" placeholder="example.com"><br><br>
+
+  <button onclick="generateDork()">🔍 Generate Dork!</button>
+  <button onclick="randomDork()">🎲 Lucky Dork</button>
+  <button onclick="searchGoogle()">🔎 Search on Google</button>
+
+  <div id="output"></div>
+
+  <div class="disclaimer">
+    ⚠️ Generate Dorks to search for hidden files in open directories ( Images, videos, Books, Archives, Torrents).
+1-Choose a Keyword
+2-Choose file type
+3-Choose specific website (optional)
+4-Click " Generate Dork"
+5-Click " Search on Google"
+  </div>
+
+  <script>
+    function generateDork() {
+      const keyword = document.getElementById('keyword').value.trim();
+      const find = document.getElementById('find').value;
+      const site = document.getElementById('site').value.trim();
+
+      if (!keyword || !find) {
+        alert("Please fill in both the keyword and what you want to find.");
+        return;
+      }
+
+      let dork = '';
+      const exclude = "-inurl:(jsp|pl|php|html|aspx|htm|cf|shtml) -inurl:(hypem|unknownsecret|sirens|writeups|trimediacentral|articlescentral|listen77|mp3raid|mp3toss|mp3drug|theindexof|index_of|wallywashis|indexofmp3)";
+
+      switch (find) {
+        case "images":
+          dork = `+(.jpg|.gif|.png|.tif|.tiff|.psd) ${keyword} intitle:\"index of\" ${exclude}`;
+          break;
+        case "videos":
+          dork = `+(.mkv|.mp4|.avi|.mov|.mpg|.wmv) ${keyword} intitle:\"index of\" ${exclude}`;
+          break;
+        case "ebooks":
+          dork = `+(.MOBI|.CBZ|.CBR|.CBC|.CHM|.EPUB|.FB2|.LIT|.LRF|.ODT|.PDF|.PRC|.PDB|.PML|.RB|.RTF|.TCR) ${keyword} intitle:\"index of\" ${exclude}`;
+          break;
+        case "torrents":
+          dork = `.torrent ${keyword} ${exclude}`;
+          break;
+        case "archives":
+          dork = `+(.rar|.tar|.zip|.sit) ${keyword} intitle:\"index of\" ${exclude}`;
+          break;
+        default:
+          dork = `intitle:\"index of\" ${keyword}`;
+      }
+
+      if (site) dork += ` site:${site}`;
+      document.getElementById("output").textContent = dork;
+    }
+
+    function randomDork() {
+      const options = [
+        'intitle:"index of" admin',
+        'inurl:login filetype:php',
+        'filetype:log password',
+        'site:.gov inurl:admin',
+        'filetype:env DB_PASSWORD',
+        'ext:sql intext:password',
+        'intitle:"webcamXP 5" inurl:8080',
+        'inurl:/phpinfo.php'
+      ];
+      const pick = options[Math.floor(Math.random() * options.length)];
+      document.getElementById("output").textContent = pick;
+    }
+
+    function searchGoogle() {
+      const dork = document.getElementById("output").textContent;
+      if (!dork) {
+        alert("Generate a dork first!");
+        return;
+      }
+      const encoded = encodeURIComponent(dork);
+      window.open(`https://www.google.com/search?q=${encoded}`, '_blank');
+    }
+  </script>
+<script>
+  document.addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+  });
+</script>
+
+</p>
+</body>
+</html>

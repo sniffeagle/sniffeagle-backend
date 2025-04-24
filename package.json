@@ -1,0 +1,12 @@
+{
+  "name": "sniffeagle-node",
+  "version": "1.0.0",
+  "description": "SniffEagle tools running on Node.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

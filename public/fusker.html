@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VKE3HLYFSN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VKE3HLYFSN');
+</script>
+  <meta charset="UTF-8">
+  <title>SniffEagle – Wildcard Fusker Streamer</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+    }
+    input, button {
+      padding: 12px;
+      margin: 10px 0;
+      background: #1f1f1f;
+      color: white;
+      border: 1px solid #333;
+      border-radius: 5px;
+      width: 100%;
+      max-width: 700px;
+    }
+    button {
+      background-color: #4caf50;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #results {
+      margin-top: 20px;
+    }
+    .found {
+      color: #90ee90;
+      font-weight: bold;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .found img {
+      max-width: 100px;
+      max-height: 80px;
+      border: 1px solid #444;
+    }
+    .error {
+      color: #f44336;
+    }
+    #consoleLog {
+      background: #000;
+      padding: 15px;
+      margin-top: 20px;
+      color: #0f0;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 14px;
+      border: 1px solid #333;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧥 SniffEagle – Wildcard Fusker Streamer</h1>
+  <p>Use smart wildcards like <code>[2022-2024]</code>, <code>[01-12]</code>, <code>[0000-0100]</code> anywhere in the URL path. (Randomized scan). Note: the fusker will check all URls within the range you specified and only return successful link responses with actual images and ignore links with failed responses.</p>
+
+  <input type="text" id="patternInput" placeholder="e.g. https://example.com/uploads/[2022-2024]/[01-03]/IMG_[0000-0020].jpg">
+  <button onclick="startScan()">🔍 Stream!</button>
+
+  <div id="results"></div>
+  <pre id="consoleLog"></pre>
+
+  <script>
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function logConsole(consoleDiv, message, color = '#0f0') {
+      const timestamp = new Date().toLocaleTimeString();
+      const span = document.createElement('span');
+      span.textContent = `[${timestamp}] ${message}\n`;
+      span.style.color = color;
+      consoleDiv.appendChild(span);
+      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    function generateRange(start, end) {
+      const range = [];
+      const padLength = Math.max(start.length, end.length);
+      const startNum = parseInt(start);
+      const endNum = parseInt(end);
+      for (let i = startNum; i <= endNum; i++) {
+        range.push(i.toString().padStart(padLength, '0'));
+      }
+      return range;
+    }
+
+    function expandWildcardsRandom(pattern, sampleSize = 1000) {
+      const regex = /\[([0-9]+)-([0-9]+)\]/g;
+      const wildcardParts = [];
+      let match;
+
+      while ((match = regex.exec(pattern)) !== null) {
+        wildcardParts.push({ token: match[0], values: generateRange(match[1], match[2]) });
+      }
+
+      const finalSet = new Set();
+      const maxTries = sampleSize * 5;
+      let tries = 0;
+
+      while (finalSet.size < sampleSize && tries < maxTries) {
+        let url = pattern;
+        for (const part of wildcardParts) {
+          const val = part.values[Math.floor(Math.random() * part.values.length)];
+          url = url.replace(part.token, val);
+        }
+        finalSet.add(url);
+        tries++;
+      }
+
+      return Array.from(finalSet);
+    }
+
+    function preloadImage(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        let timedOut = false;
+        const timeout = setTimeout(() => {
+          timedOut = true;
+          resolve({ status: 'timeout' });
+        }, 5000);
+
+        img.onload = () => {
+          if (!timedOut) {
+            clearTimeout(timeout);
+            resolve({ status: 'ok' });
+          }
+        };
+        img.onerror = () => {
+          if (!timedOut) {
+            clearTimeout(timeout);
+            resolve({ status: 'error' });
+          }
+        };
+        img.src = url;
+      });
+    }
+
+    async function startScan() {
+      const pattern = document.getElementById('patternInput').value.trim();
+      const resultsDiv = document.getElementById('results');
+      const consoleDiv = document.getElementById('consoleLog');
+
+      resultsDiv.innerHTML = '';
+      consoleDiv.innerHTML = '';
+
+      if (!pattern.includes('[') || !pattern.includes(']')) {
+        resultsDiv.innerHTML = '<div class="error">❌ Please use at least one wildcard pattern like [0000-0020]</div>';
+        return;
+      }
+
+      logConsole(consoleDiv, `🔁 Expanding wildcards randomly...`);
+      const urls = expandWildcardsRandom(pattern, 1000);
+      logConsole(consoleDiv, `🌐 ${urls.length} randomized URLs generated. Scanning...`);
+
+      for (let url of urls) {
+        const response = await preloadImage(url);
+        if (response.status === 'ok') {
+          logConsole(consoleDiv, `✅ FOUND: ${url}`);
+          resultsDiv.innerHTML += `
+            <div class="found">
+              <img src="${url}" alt="Thumb">
+              <a href="${url}" target="_blank">${url}</a>
+            </div>
+          `;
+        } else if (response.status === 'timeout') {
+          logConsole(consoleDiv, `⏱️ TIMEOUT (Possibly blocked): ${url}`, 'orange');
+        } else {
+          logConsole(consoleDiv, `❌ NOT FOUND: ${url}`, 'red');
+        }
+        await sleep(100);
+      }
+
+      if (resultsDiv.innerHTML === '') {
+        resultsDiv.innerHTML = '<div class="error">❌ No valid images found.</div>';
+      }
+    }
+  </script>
+<script>
+  document.addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+  });
+</script>
+
+</p>
+</body>
+</html>

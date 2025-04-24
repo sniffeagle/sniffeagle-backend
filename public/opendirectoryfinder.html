@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VKE3HLYFSN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VKE3HLYFSN');
+</script>
+  <meta charset="UTF-8">
+  <title>SniffEagle – Open Directory Hunter</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+    }
+    input, button {
+      padding: 12px;
+      margin: 10px 0;
+      background: #1f1f1f;
+      color: white;
+      border: 1px solid #333;
+      border-radius: 5px;
+      width: 100%;
+      max-width: 500px;
+    }
+    button {
+      background-color: #4caf50;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #console, #foundLinks {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background-color: #1e1e1e;
+      border: 1px solid #333;
+      padding: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+    }
+    #foundLinks {
+      background-color: #162616;
+      border-color: #2e6e2e;
+      color: #90ee90;
+      font-weight: bold;
+    }
+    .error { color: #f44336; }
+    .blocked { color: #ffa726; }
+  </style>
+</head>
+<body>
+
+  <h1>🦅 SniffEagle – Open Directory Hunter</h1>
+  <p>Enter a website and upload your own list of paths to scan.</p>
+
+  <input type="text" id="urlInput" placeholder="Enter site URL (e.g., https://example.com)">
+  <input type="file" id="pathFileInput" accept=".txt">
+  <button onclick="startScan()">🔍 Hunt!</button>
+
+  <h3>✅ Found Open Directories</h3>
+  <div id="foundLinks">[ none yet ]</div>
+
+  <h3>🧾 Scan Console</h3>
+  <div id="console"></div>
+
+  <script>
+    const proxies = [
+      "https://api.allorigins.win/get?url=",
+      "https://proxy.scrapeops.io/v1", // optional ScrapeOps-style proxy
+      "https://www.scraperapi.com?api_key=YOUR_API_KEY&url="
+    ];
+
+    let proxyIndex = 0;
+    function getNextProxy() {
+      proxyIndex = (proxyIndex + 1) % proxies.length;
+      return proxies[proxyIndex];
+    }
+
+    async function startScan() {
+      const site = document.getElementById('urlInput').value.trim().replace(/\/+$/, '');
+      const fileInput = document.getElementById('pathFileInput');
+      const consoleDiv = document.getElementById('console');
+      const foundDiv = document.getElementById('foundLinks');
+
+      consoleDiv.innerHTML = '';
+      foundDiv.innerHTML = '[ scanning... ]';
+
+      if (!site || !fileInput.files.length) {
+        consoleDiv.innerHTML = '<span class="error">❌ Please enter a URL and upload a path list.</span>';
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const text = await file.text();
+      const paths = text.split(/\r?\n/).map(p => p.trim().replace(/^\/+|\/+$/g, '')).filter(p => p.length > 0);
+
+      const foundLinks = [];
+
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i];
+        const fullURL = `${site}/${path}/`;
+        consoleDiv.innerHTML += `🕵️ Checking: ${fullURL}\n`;
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+
+        let tries = 0;
+        let success = false;
+
+        while (tries < proxies.length && !success) {
+          const proxy = getNextProxy();
+          try {
+            const res = await fetch(`${proxy}${encodeURIComponent(fullURL)}`);
+            const data = await res.json();
+            const content = data.contents.toLowerCase();
+
+            const isBlocked = content.includes('access denied') ||
+                              content.includes('forbidden') ||
+                              content.includes('rate limit') ||
+                              content.includes('cloudflare') ||
+                              content.includes('checking your browser') ||
+                              content.includes('<title>403') ||
+                              content.includes('error 403');
+
+            if (isBlocked) {
+              consoleDiv.innerHTML += `🚫 <span class="blocked">Blocked</span>: ${fullURL} via proxy ${proxy}\n`;
+              tries++;
+              continue;
+            }
+
+            if (
+              (content.includes('index of') && content.includes(path.toLowerCase())) ||
+              content.includes('parent directory') ||
+              content.includes('directory listing') ||
+              content.includes('<a href="..">')
+            ) {
+              foundLinks.unshift(`<a href="${fullURL}" target="_blank">${fullURL}</a>`);
+              foundDiv.innerHTML = foundLinks.join('\n');
+              consoleDiv.innerHTML += `✅ Open dir found: ${fullURL}\n`;
+              success = true;
+              break;
+            }
+          } catch (err) {
+            consoleDiv.innerHTML += `❌ <span class="error">Error</span>: ${fullURL} via ${proxy}\n`;
+            tries++;
+          }
+
+          consoleDiv.scrollTop = consoleDiv.scrollHeight;
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        if (!success) {
+          consoleDiv.innerHTML += `❌ Not found: ${fullURL}\n`;
+        }
+
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+      }
+
+      if (foundLinks.length === 0) {
+        foundDiv.innerHTML = '[ none found ]';
+      } else {
+        foundDiv.innerHTML = foundLinks.join('\n');
+      }
+
+      consoleDiv.innerHTML += '\n✅ Done scanning.';
+    }
+  </script>
+<script>
+  document.addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+  });
+</script>
+
+</p>
+</body>
+</html>

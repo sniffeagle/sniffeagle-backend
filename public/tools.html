@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VKE3HLYFSN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VKE3HLYFSN');
+</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SniffEagle Tools Hub</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0d0d0d;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e0e0e0;
+    }
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #00ffc3;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .app-card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      transition: 0.2s ease-in-out;
+      box-shadow: 0 0 10px rgba(0,255,195,0.1);
+    }
+    .app-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 15px rgba(0,255,195,0.3);
+    }
+    .app-card button {
+      background: #00ffc3;
+      color: #000;
+      font-weight: bold;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    iframe#toolFrame {
+      width: 100%;
+      height: 90vh;
+      border: none;
+      display: none;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    🦅 SniffEagle Pro Suite
+  </header>
+ <p><a href="index.html">← Back to Home</a></p>
+  <main>
+    <section class="grid">
+      <div class="app-card">
+        <div>🔎 WildCart Fusker</div>
+        <button onclick="loadTool('/fusker')">Launch</button>
+      </div>
+      <div class="app-card">
+        <div>💉 SQL Injector</div>
+        <button onclick="loadTool('/injector')">Launch</button>
+      </div>
+      <div class="app-card">
+        <div>🧪 Google Dork Generator</div>
+        <button onclick="loadTool('/dork-generator')">Launch</button>
+      </div>
+      <div class="app-card">
+        <div>📂 Open Directory Finder</div>
+        <button onclick="loadTool('/opendirectoryfinder')">Launch</button>
+      </div>
+    </section>
+
+    <iframe id="toolFrame"></iframe>
+  </main>
+  <footer>
+    © 2025 SniffEagle Labs. Elite only. 🧠
+  </footer>
+
+  <script>
+    function loadTool(path) {
+      const iframe = document.getElementById("toolFrame");
+      iframe.src = path;
+      iframe.style.display = "block";
+      window.scrollTo({ top: iframe.offsetTop, behavior: 'smooth' });
+    }
+  </script>
+<script>
+  document.addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+  });
+</script>
+<script>
+  document.addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+  });
+</script>
+
+
+</body>
+</html>
