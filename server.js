@@ -5,11 +5,19 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 app.use((req, res, next) => {
-  if (req.hostname === 'sniffeagle.com') {
-    return res.redirect(301, `https://www.sniffeagle.com${req.originalUrl}`);
+  // Redirect HTTP to HTTPS
+  if (req.headers["x-forwarded-proto"] !== "https") {
+    return res.redirect("https://" + req.headers.host + req.url);
   }
+
+  // Redirect sniffeagle.com to www.sniffeagle.com
+  if (req.headers.host === "sniffeagle.com") {
+    return res.redirect(301, "https://www.sniffeagle.com" + req.url);
+  }
+
   next();
 });
+
 
 app.use(express.static('public'));
 
