@@ -4,6 +4,15 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
+app.use((req, res, next) => {
+  if (req.hostname === 'sniffeagle.com') {
+    return res.redirect(301, `https://www.sniffeagle.com${req.originalUrl}`);
+  }
+  next();
+});
+
+app.use(express.static('public'));
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
