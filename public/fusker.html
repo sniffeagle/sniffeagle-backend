@@ -70,7 +70,15 @@
 <body>
 
   <h1>🧥 SniffEagle – Wildcard Fusker Streamer</h1>
-  <p>Use smart wildcards like <code>[2022-2024]</code>, <code>[01-12]</code>, <code>[0000-0100]</code> anywhere in the URL path. (Randomized scan). Note: the fusker will check all URls within the range you specified and only return successful link responses with actual images and ignore links with failed responses.</p>
+  <p>Find all images having a sequenced file name in a specific website.<br>Note: the fusker will check all URLs within the range you specified and only return successful link responses with actual images and ignore links with failed responses.</p>
+<p> <b>Example:</b></p>
+1-Let's say the Image URL is : https://examplewebsite.com/wp-content/uploads/2025/07/IMG_2398.jpg<br>
+2-Wp-content/uploads is the path for the image,2025 is the year, 07 is the folder, and IMG_2398.jpg is the file name<br>
+3-If you want to find all the images in this specific folder, you input : https://examplewebsite.com/wp-content/uploads/2025/07/IMG_[0000-9999].jpg<br>
+4-This will search for all the images within the range you specified, it can be any range you want<br>
+5-Same method applies to the folder name part or the year part , you can set the range [01-12] instead of the 07 and [2020-2025] instead of 2025<br>
+6-This works on any file names not just IMG_xxxx.jpg, as long as there is a sequence in the file name ( img0000 or image_01 etc....)<br><br>
+Enter your URL:
 
   <input type="text" id="patternInput" placeholder="e.g. https://example.com/uploads/[2022-2024]/[01-03]/IMG_[0000-0020].jpg">
   <button onclick="startScan()">🔍 Stream!</button>

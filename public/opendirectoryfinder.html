@@ -59,10 +59,14 @@
 <body>
 
   <h1>🦅 SniffEagle – Open Directory Hunter</h1>
-  <p>Enter a website and upload your own list of paths to scan.</p>
+  <p>Enter a website and upload your own list of paths to scan or use our ultimate list ( the bigger the list, the more chances there are, and more time the scanning will take).</p>
 
   <input type="text" id="urlInput" placeholder="Enter site URL (e.g., https://example.com)">
   <input type="file" id="pathFileInput" accept=".txt">
+<object data="/path_to_text_file/text.txt" type="text/plain"
+width="500" style="height: 300px">
+<a href="directorypaths.txt">Download our ultimate list</a>
+</object>
   <button onclick="startScan()">🔍 Hunt!</button>
 
   <h3>✅ Found Open Directories</h3>
